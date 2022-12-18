@@ -1,9 +1,8 @@
 *This is a fork of (https://github.com/TemugeB/QR_code_orientation_OpenCV)*
+
 *I tweaked it to return only the QR Code orientation relative to horizon, in degrees.*
 
 # QR code orientation using OpenCV
-
-![Alt text](media/Example.gif?raw=true "Example output.")
 
 Simple demo that uses OpenCV QR detector and photogrammetry functions to determine the location and orientation of QR code in camera view. Explanation of the code is provided as a blog post here: [link](https://temugeb.github.io/python/computer_vision/2021/06/15/QR-Code_Orientation.html). In this demo, I've included a short video clip as well as the camera calibration parameters. The camera calibration parameters must be known. 
 
