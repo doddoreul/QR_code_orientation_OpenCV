@@ -1,3 +1,6 @@
+* This is a fork of (https://github.com/TemugeB/QR_code_orientation_OpenCV)*
+* I tweaked it to return only the QR Code orientation relative to horizon, in degrees.
+
 # QR code orientation using OpenCV
 
 ![Alt text](media/Example.gif?raw=true "Example output.")

@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 import sys
-
+import math
 
 def read_camera_parameters(filepath = 'camera_parameters/intrinsic.dat'):
 
@@ -47,45 +47,31 @@ def get_qr_coords(cmtx, dist, points):
     else: return [], [], []
 
 
-def show_axes(cmtx, dist, in_source):
-    cap = cv.VideoCapture(in_source)
+def get_orientation(cmtx, dist):
 
-    qr = cv.QRCodeDetector()
+    ret, img = cap.read()
+    if ret == False: return None
 
-    while True:
-        ret, img = cap.read()
-        if ret == False: break
+    ret_qr, points = qr.detect(img)
+    cv.imshow('frame', img)
 
-        ret_qr, points = qr.detect(img)
+    if ret_qr:
+        axis_points, rvec, tvec = get_qr_coords(cmtx, dist, points)
 
-        if ret_qr:
-            axis_points, rvec, tvec = get_qr_coords(cmtx, dist, points)
+        #check axes points are projected to camera view.
+        if len(axis_points) > 0:
+            axis_points = axis_points.reshape((4,2))
 
-            #BGR color format
-            colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (0,0,0)]
+            x1 = axis_points[1][0]
+            y1 = axis_points[1][1]
+            x0 = axis_points[0][0]
+            y0 = axis_points[0][1]
 
-            #check axes points are projected to camera view.
-            if len(axis_points) > 0:
-                axis_points = axis_points.reshape((4,2))
+            angle = math.atan2(x0-x1,y0-y1)
+            angle_dg = -(math.floor((-180-math.degrees(angle))*100)/100)
+            return angle_dg
 
-                origin = (int(axis_points[0][0]),int(axis_points[0][1]) )
 
-                for p, c in zip(axis_points[1:], colors[:3]):
-                    p = (int(p[0]), int(p[1]))
-
-                    #Sometimes qr detector will make a mistake and projected point will overflow integer value. We skip these cases. 
-                    if origin[0] > 5*img.shape[1] or origin[1] > 5*img.shape[1]:break
-                    if p[0] > 5*img.shape[1] or p[1] > 5*img.shape[1]:break
-
-                    cv.line(img, origin, p, c, 5)
-
-        cv.imshow('frame', img)
-
-        k = cv.waitKey(20)
-        if k == 27: break #27 is ESC key.
-
-    cap.release()
-    cv.destroyAllWindows()
 
 if __name__ == '__main__':
 
@@ -96,4 +82,16 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         input_source = int(sys.argv[1])
 
-    show_axes(cmtx, dist, input_source)
+    cap = cv.VideoCapture(input_source)
+    qr = cv.QRCodeDetector()
+    angle_dg = 0
+
+    while True:
+        angle_dg = get_orientation(cmtx, dist)
+        print('Angle: ', angle_dg)
+        
+        k = cv.waitKey(20)
+        if k == 27: break #27 is ESC key.
+
+    cap.release()
+    cv.destroyAllWindows()
